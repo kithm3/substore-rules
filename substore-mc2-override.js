@@ -255,33 +255,3 @@ function main(source) {
   if (Array.isArray(source)) return source;
   return buildConfig(source || {});
 }
-
-async function operator(input) {
-  if (!input || (!input.$files && input.$content == null)) return input;
-
-  const file = input.$file || {};
-  let sourceConfig = {};
-
-  if (input.$content) {
-    try {
-      sourceConfig = yaml.safeLoad(input.$content) || {};
-    } catch (error) {
-      sourceConfig = {};
-    }
-  }
-
-  if (!Array.isArray(sourceConfig.proxies) && file.sourceType !== "none" && file.sourceName) {
-    sourceConfig.proxies = await produceArtifact({
-      type: file.sourceType || "collection",
-      name: file.sourceName,
-      platform: "mihomo",
-      produceType: "internal",
-      produceOpts: {
-        "delete-underscore-fields": true,
-      },
-    });
-  }
-
-  input.$content = yaml.safeDump(main(sourceConfig));
-  return input;
-}
