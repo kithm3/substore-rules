@@ -255,7 +255,3 @@ function main(source) {
   if (Array.isArray(source)) return source;
   return buildConfig(source || {});
 }
-
-function operator(proxies) {
-  return proxies;
-}
