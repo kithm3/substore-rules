@@ -226,6 +226,72 @@ const CRYPTO_DOMAINS = [
   "pump.fun",
 ];
 
+const DOMESTIC_IOT_DOMAINS = [
+  // 海马爸比 / 星巡智能
+  "simshine.cn",
+  "simshine.com.cn",
+  "simshine.com",
+  // 小米 / 米家 / Aqara / Yeelight
+  "mi.com",
+  "mi.cn",
+  "miui.com",
+  "xiaomi.com",
+  "xiaomi.net",
+  "mijia.tech",
+  "io.mi.com",
+  "home.mi.com",
+  "home.miui.com",
+  "aqara.com",
+  "lumiunited.com",
+  "yeelight.com",
+  // 涂鸦 / Smart Life
+  "tuya.com",
+  "tuya.cn",
+  "tuyacn.com",
+  "tuyaus.com",
+  "tuyaeu.com",
+  "tuyacn.com",
+  "smartlife.com",
+  "smart321.com",
+  // 摄像头 / 安防 / 路由与智能硬件
+  "ezviz.com",
+  "ezvizlife.com",
+  "hikvision.com",
+  "hik-connect.com",
+  "ys7.com",
+  "lechange.com",
+  "imoulife.com",
+  "dahuasecurity.com",
+  "tp-link.com.cn",
+  "tplinkcloud.com.cn",
+  "mercusys.com.cn",
+  "tenda.com.cn",
+  "huawei.com",
+  "hicloud.com",
+  "vmall.com",
+  "honor.com",
+  "360.cn",
+  "360.com",
+  // 国内云、推送、P2P 和常见基础服务
+  "aliyun.com",
+  "aliyuncs.com",
+  "alicdn.com",
+  "myqcloud.com",
+  "qcloud.com",
+  "tencentcloudapi.com",
+  "qcloudcdn.com",
+  "bdstatic.com",
+  "baidu.com",
+  "qq.com",
+  "gtimg.com",
+  "jpush.cn",
+  "getui.com",
+  "umeng.com",
+  "oray.com",
+  "oray.net",
+  "nat123.com",
+];
+
 function uniq(items) {
   return [...new Set((items || []).filter(Boolean))];
 }
@@ -397,7 +463,6 @@ function buildRules() {
   ];
 
   return [
-    "AND,((DST-PORT,443),(NETWORK,UDP)),REJECT",
     "GEOSITE,private,DIRECT",
     "GEOIP,private,DIRECT,no-resolve",
     "DOMAIN-SUFFIX,local,DIRECT",
@@ -407,7 +472,16 @@ function buildRules() {
     "IP-CIDR,172.16.0.0/12,DIRECT,no-resolve",
     "IP-CIDR,192.168.0.0/16,DIRECT,no-resolve",
     "IP-CIDR,224.0.0.0/4,DIRECT,no-resolve",
-    "DOMAIN,services.googleapis.cn,选择代理",
+    "DOMAIN-SUFFIX,cn,DIRECT",
+    "GEOSITE,cn,DIRECT",
+    "GEOIP,cn,DIRECT,no-resolve",
+    ...domainSuffixRules(DOMESTIC_IOT_DOMAINS, "DIRECT"),
+    "DOMAIN-KEYWORD,stun,DIRECT",
+    "DOMAIN-KEYWORD,mqtt,DIRECT",
+    "DST-PORT,123,DIRECT",
+    "DST-PORT,1883,DIRECT",
+    "DST-PORT,8883,DIRECT",
+    "DOMAIN,services.googleapis.cn,DIRECT",
     ...exactRules,
     ...domainSuffixRules(AI_CHAT_DOMAINS, GROUP.AI),
     ...domainSuffixRules(AI_SEARCH_DOMAINS, GROUP.AI),
@@ -433,8 +507,6 @@ function buildRules() {
     "GEOIP,telegram,Telegram,no-resolve",
     "GEOIP,netflix,Netflix,no-resolve",
     "GEOSITE,gfw,选择代理",
-    "GEOSITE,cn,DIRECT",
-    "GEOIP,cn,DIRECT,no-resolve",
     "MATCH,选择代理",
   ];
 }
