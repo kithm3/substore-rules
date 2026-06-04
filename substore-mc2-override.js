@@ -226,6 +226,41 @@ const CRYPTO_DOMAINS = [
   "pump.fun",
 ];
 
+const BLACKMATRIX7_RULE_PROVIDERS = {
+  BM7_Lan: {
+    type: "http",
+    behavior: "classical",
+    format: "text",
+    interval: 86400,
+    url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Lan/Lan.list",
+    path: "./ruleset/blackmatrix7/Lan.list",
+  },
+  BM7_XiaoMi: {
+    type: "http",
+    behavior: "classical",
+    format: "text",
+    interval: 86400,
+    url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/XiaoMi/XiaoMi.list",
+    path: "./ruleset/blackmatrix7/XiaoMi.list",
+  },
+  BM7_LvMiLianChuang: {
+    type: "http",
+    behavior: "classical",
+    format: "text",
+    interval: 86400,
+    url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/LvMiLianChuang/LvMiLianChuang.list",
+    path: "./ruleset/blackmatrix7/LvMiLianChuang.list",
+  },
+  BM7_LG: {
+    type: "http",
+    behavior: "classical",
+    format: "text",
+    interval: 86400,
+    url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/LG/LG.list",
+    path: "./ruleset/blackmatrix7/LG.list",
+  },
+};
+
 const DOMESTIC_IOT_DOMAINS = [
   // 海马爸比 / 星巡智能
   "simshine.cn",
@@ -247,19 +282,44 @@ const DOMESTIC_IOT_DOMAINS = [
   "yeelight.com.cn",
   "yeelink.net",
   // 美的 / 美居 / Midea IoT
+  "asi-midea.com",
+  "midea-buy.com",
+  "midea-group.com",
+  "midea-hotwater.com",
   "midea.com",
   "midea.cn",
   "midea.com.cn",
   "midea.net",
+  "midea.com.tr",
+  "mideabiomedical.com",
+  "mideadc.com",
+  "mideaepay.com",
+  "mideaepayuat.com",
+  "mideav.com",
+  "mideazy.com",
   "msmart.midea.com",
   "msmartlife.com",
+  "smartmidea.net",
   "midea.com.hk",
   "iot.midea.com",
   // 海尔 / 海尔智家 / U+
+  "ehaier.com",
+  "haier-ioc.com",
   "haier.com",
   "haier.net",
   "haier.cn",
   "haier.com.cn",
+  "haier.hk",
+  "haiercash.com",
+  "haierfinancial.com",
+  "haiermoney.com",
+  "haiershequ.com",
+  "haiershui.com",
+  "haiersmarthomes.com",
+  "haierubic.com",
+  "haieruplus.com",
+  "ihaier.com",
+  "pohaier.com",
   "smart-home.haier.com",
   "uhome.haier.net",
   "haieruhome.com",
@@ -280,6 +340,7 @@ const DOMESTIC_IOT_DOMAINS = [
   "narwal.com",
   "narwal.cn",
   "narwal.com.cn",
+  "narwaltech.com",
   "narwalrobotics.com",
   "narwal-general-public.oss-cn-shenzhen.aliyuncs.com",
   // 追觅 Dreame
@@ -287,6 +348,10 @@ const DOMESTIC_IOT_DOMAINS = [
   "dreame.com",
   "dreametech.com",
   "dreamehome.com",
+  "dreamershop.com",
+  "ecodreamers.com",
+  "pdreamer.com",
+  "todreamer.com",
   "app.dreame.tech",
   "mall.dreame.tech",
   "dcr.dreame.tech",
@@ -309,7 +374,10 @@ const DOMESTIC_IOT_DOMAINS = [
   "tuyacn.com",
   "tuyaus.com",
   "tuyaeu.com",
-  "tuyacn.com",
+  "gaituya.com",
+  "tuyansuo.com",
+  "tuyaya.com",
+  "weituya.com",
   "smartlife.com",
   "smart321.com",
   // 摄像头 / 安防 / 路由与智能硬件
@@ -522,6 +590,10 @@ function buildRules() {
   ];
 
   return [
+    "RULE-SET,BM7_Lan,DIRECT",
+    "RULE-SET,BM7_XiaoMi,DIRECT",
+    "RULE-SET,BM7_LvMiLianChuang,DIRECT",
+    "RULE-SET,BM7_LG,DIRECT",
     "GEOSITE,private,DIRECT",
     "GEOIP,private,DIRECT,no-resolve",
     "DOMAIN-SUFFIX,local,DIRECT",
@@ -586,6 +658,7 @@ function buildConfig(source) {
     dns: buildDns(),
     proxies,
     "proxy-groups": buildProxyGroups(proxies),
+    "rule-providers": BLACKMATRIX7_RULE_PROVIDERS,
     rules: buildRules(),
   };
 }
