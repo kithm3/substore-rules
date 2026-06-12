@@ -7,3 +7,9 @@ Public remote scripts for Sub-Store configuration overrides.
 Use `substore-mc2-override.js` in a Sub-Store Mihomo/Profile/File script override step.
 
 This script does not contain node data or private subscription URLs. Sub-Store remains responsible for fetching and updating nodes; the script only rebuilds DNS, proxy groups, and rules for Magic Catling 2.
+
+## YYDS Lite
+
+Use `substore-yyds-lite-override.js` in a Sub-Store Mihomo/Profile/File script override step.
+
+This script is adapted from `666OS/YYDS` `mihomo/config/cn/Lite_cn.yaml`. It keeps Sub-Store as the source of nodes and generates the Lite DNS, policy groups, rule providers, and rules from those inline proxies.
