@@ -60,6 +60,76 @@ const ICON = {
 
 const YYDS_RULE_BASE = "https://github.com/666OS/rules/raw/release/mihomo";
 
+const AI_SUPPLEMENT_DOMAINS = [
+  "quora.com",
+  "pi.ai",
+  "inflection.ai",
+  "you.com",
+  "phind.com",
+  "exa.ai",
+  "arc.net",
+  "thebrowser.company",
+  "anysphere.co",
+  "replit.com",
+  "replit.dev",
+  "v0.dev",
+  "vercel.ai",
+  "bolt.new",
+  "stackblitz.com",
+  "lovable.dev",
+  "cody.dev",
+  "continue.dev",
+  "qodo.ai",
+  "codium.ai",
+  "aider.chat",
+  "ideogram.ai",
+  "krea.ai",
+  "magnific.ai",
+  "playground.com",
+  "firefly.adobe.com",
+  "runway.com",
+  "luma.ai",
+  "pika.art",
+  "descript.com",
+  "veed.io",
+  "invideo.io",
+  "suno.com",
+  "suno.ai",
+  "udio.com",
+  "murf.ai",
+  "resemble.ai",
+  "vapi.ai",
+  "assemblyai.com",
+  "deepgram.com",
+  "rev.ai",
+  "notion.so",
+  "notion.com",
+  "gamma.app",
+  "tome.app",
+  "granola.ai",
+  "fireflies.ai",
+  "otter.ai",
+  "tldv.io",
+  "read.ai",
+  "copy.ai",
+  "writesonic.com",
+  "grammarly.com",
+  "quillbot.com",
+  "deepl.com",
+  "canva.com",
+  "napkin.ai",
+  "together.ai",
+  "fireworks.ai",
+  "ai21.com",
+  "modal.com",
+  "baseten.co",
+  "fal.ai",
+  "runpod.io",
+  "lambda.ai",
+  "databricks.com",
+  "scale.com",
+];
+
 function uniq(items) {
   return [...new Set((items || []).filter(Boolean))];
 }
@@ -232,6 +302,10 @@ function buildRuleProviders() {
 }
 
 function buildRules() {
+  const aiSupplementRules = uniq(AI_SUPPLEMENT_DOMAINS).map(
+    (domain) => `DOMAIN-SUFFIX,${domain},${GROUPS.AI}`
+  );
+
   return [
     "RULE-SET,Private,DIRECT",
     "RULE-SET,PrivateIP,DIRECT,no-resolve",
@@ -240,6 +314,7 @@ function buildRules() {
     "RULE-SET,TelegramIP,即时通讯,no-resolve",
     "RULE-SET,SocialMedia,社交平台",
     "RULE-SET,SocialMediaIP,社交平台,no-resolve",
+    ...aiSupplementRules,
     "RULE-SET,AI,人工智能",
     "RULE-SET,AIIP,人工智能,no-resolve",
     "RULE-SET,Dev,开发服务",
