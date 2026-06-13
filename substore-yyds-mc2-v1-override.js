@@ -1,10 +1,10 @@
 // Sub-Store remote override for YYDS-MC2-V1.
 //
-// Goal:
-// - Keep the router-friendly, low-memory YYDS .mrs rule-provider style.
-// - Preserve the useful MC2 policy layout: AI, Crypto, major services,
-//   regional auto groups, and domestic smart-home bypasses.
-// - Let Sub-Store own node subscriptions and updates.
+// V1 router profile:
+// - Keep only small YYDS .mrs providers for high-value categories.
+// - Avoid large China/Proxy provider sets; use domestic Geo fallback late.
+// - Preserve the essentials from the previous MC2 profile: AI, Crypto,
+//   Telegram, media groups, regional selection, and domestic smart-home bypass.
 
 const YYDS_RULE_BASE = "https://github.com/666OS/rules/raw/release/mihomo";
 
@@ -13,28 +13,20 @@ const GROUP = {
   MANUAL: "手动选择",
   AUTO: "自动选择",
   FALLBACK: "故障转移",
-  DIRECT: "直连",
-  LOW_COST: "低倍率节点",
   LANDING: "落地节点",
+  LOW_COST: "低倍率节点",
   AI: "AI",
   CRYPTO: "Crypto",
-  GOOGLE: "Google",
-  MICROSOFT: "Microsoft",
   TELEGRAM: "Telegram",
   YOUTUBE: "YouTube",
   NETFLIX: "Netflix",
-  APPLE: "Apple",
-  ONEDRIVE: "OneDrive",
-  GITHUB: "GitHub",
   GLOBAL: "GLOBAL",
 };
 
 const COUNTRY_MATCHERS = [
   ["香港节点", /香港|港|HK|Hong\s*Kong|HongKong/i],
-  ["台湾节点", /台湾|台|TW|Taiwan|Taipei/i],
   ["日本节点", /日本|东京|大阪|日|JP|Japan|Tokyo|Osaka/i],
   ["新加坡节点", /新加坡|坡|狮城|SG|Singapore/i],
-  ["韩国节点", /韩国|韩|KR|Korea|Seoul/i],
   ["美国节点", /美国|美|US|USA|America|United\s*States/i],
 ];
 
@@ -116,9 +108,6 @@ const AI_SUPPLEMENT_DOMAINS = [
 const DOMESTIC_IOT_DOMAINS = [
   "simshine.cn",
   "simshine.com.cn",
-  "mi.com",
-  "mi.cn",
-  "miui.com",
   "xiaomi.com",
   "xiaomi.net",
   "mijia.tech",
@@ -130,7 +119,6 @@ const DOMESTIC_IOT_DOMAINS = [
   "midea.com",
   "midea.cn",
   "midea.com.cn",
-  "midea.net",
   "msmartlife.com",
   "smartmidea.net",
   "haier.com",
@@ -176,14 +164,9 @@ const DOMESTIC_IOT_DOMAINS = [
   "lechange.com",
   "imoulife.com",
   "dahuasecurity.com",
-  "tp-link.com.cn",
   "tplinkcloud.com.cn",
-  "mercusys.com.cn",
-  "tenda.com.cn",
   "huawei.com",
   "hicloud.com",
-  "vmall.com",
-  "honor.com",
   "aliyun.com",
   "aliyuncs.com",
   "myqcloud.com",
@@ -247,8 +230,8 @@ function buildCountryGroups(proxies) {
     const matched = matchedNames(all, matcher).filter(
       (name) => !LOW_COST_RE.test(name) && !LANDING_RE.test(name)
     );
-    return createUrlTest(groupName, withFallback(matched, all));
-  });
+    return matched.length > 0 ? createUrlTest(groupName, matched) : null;
+  }).filter(Boolean);
 }
 
 function buildProxyGroups(proxies) {
@@ -259,6 +242,10 @@ function buildProxyGroups(proxies) {
   const landingNodes = all.filter((name) => LANDING_RE.test(name));
   const hasLowCost = lowCostNodes.length > 0;
   const hasLanding = landingNodes.length > 0;
+  const hasUs = countryGroupNames.includes("美国节点");
+  const hasJp = countryGroupNames.includes("日本节点");
+  const hasSg = countryGroupNames.includes("新加坡节点");
+  const hasHk = countryGroupNames.includes("香港节点");
 
   const commonChoices = uniq([
     GROUP.AUTO,
@@ -272,18 +259,18 @@ function buildProxyGroups(proxies) {
 
   const usFirst = uniq([
     hasLanding && GROUP.LANDING,
-    "美国节点",
+    hasUs && "美国节点",
     GROUP.AUTO,
-    "日本节点",
-    "新加坡节点",
+    hasJp && "日本节点",
+    hasSg && "新加坡节点",
     GROUP.SELECT,
     GROUP.MANUAL,
     "DIRECT",
   ]);
 
-  const hkSgFirst = uniq([
-    "新加坡节点",
-    "香港节点",
+  const sgHkFirst = uniq([
+    hasSg && "新加坡节点",
+    hasHk && "香港节点",
     GROUP.AUTO,
     GROUP.SELECT,
     GROUP.MANUAL,
@@ -294,19 +281,14 @@ function buildProxyGroups(proxies) {
     createSelect(GROUP.SELECT, commonChoices),
     createSelect(GROUP.MANUAL, withFallback(all, [])),
     createUrlTest(GROUP.AUTO, withFallback(all, [])),
-    createFallback(GROUP.FALLBACK, countryGroupNames),
+    createFallback(GROUP.FALLBACK, withFallback(countryGroupNames, all)),
     hasLanding ? createSelect(GROUP.LANDING, landingNodes) : null,
     hasLowCost ? createUrlTest(GROUP.LOW_COST, lowCostNodes) : null,
     createSelect(GROUP.AI, usFirst),
-    createSelect(GROUP.CRYPTO, uniq([GROUP.SELECT, "美国节点", "日本节点", "香港节点", GROUP.AUTO, GROUP.MANUAL, "DIRECT"])),
-    createSelect(GROUP.GOOGLE, uniq([GROUP.SELECT, "美国节点", GROUP.AUTO, GROUP.MANUAL, "DIRECT"])),
-    createSelect(GROUP.MICROSOFT, uniq([GROUP.SELECT, "美国节点", GROUP.AUTO, GROUP.MANUAL, "DIRECT"])),
-    createSelect(GROUP.TELEGRAM, hkSgFirst),
-    createSelect(GROUP.YOUTUBE, uniq([GROUP.SELECT, "美国节点", "日本节点", GROUP.AUTO, GROUP.MANUAL, "DIRECT"])),
-    createSelect(GROUP.NETFLIX, uniq([GROUP.SELECT, "美国节点", "日本节点", "新加坡节点", GROUP.AUTO, GROUP.MANUAL, "DIRECT"])),
-    createSelect(GROUP.APPLE, uniq(["DIRECT", GROUP.SELECT, GROUP.AUTO, GROUP.MANUAL])),
-    createSelect(GROUP.ONEDRIVE, uniq([GROUP.MICROSOFT, GROUP.SELECT, GROUP.AUTO, GROUP.MANUAL, "DIRECT"])),
-    createSelect(GROUP.GITHUB, uniq([GROUP.SELECT, "美国节点", GROUP.AUTO, GROUP.MANUAL, "DIRECT"])),
+    createSelect(GROUP.CRYPTO, uniq([GROUP.SELECT, hasUs && "美国节点", hasJp && "日本节点", hasHk && "香港节点", GROUP.AUTO, GROUP.MANUAL, "DIRECT"])),
+    createSelect(GROUP.TELEGRAM, sgHkFirst),
+    createSelect(GROUP.YOUTUBE, uniq([GROUP.SELECT, hasUs && "美国节点", hasJp && "日本节点", GROUP.AUTO, GROUP.MANUAL, "DIRECT"])),
+    createSelect(GROUP.NETFLIX, uniq([GROUP.SELECT, hasUs && "美国节点", hasJp && "日本节点", hasSg && "新加坡节点", GROUP.AUTO, GROUP.MANUAL, "DIRECT"])),
     ...countryGroups,
   ].filter(Boolean);
 
@@ -339,30 +321,12 @@ function buildRuleProviders() {
     Private: domainProvider("Private"),
     PrivateIP: ipProvider("Private"),
     AI: domainProvider("AI"),
-    AIIP: ipProvider("AI"),
     Crypto: domainProvider("Crypto"),
-    Google: domainProvider("Google"),
-    GoogleIP: ipProvider("Google"),
-    Microsoft: domainProvider("Microsoft"),
-    GitHub: domainProvider("GitHub"),
     Telegram: domainProvider("Telegram"),
     TelegramIP: ipProvider("Telegram"),
-    TM: domainProvider("TM"),
     YouTube: domainProvider("YouTube"),
     Netflix: domainProvider("Netflix"),
     NetflixIP: ipProvider("Netflix"),
-    Apple: domainProvider("Apple"),
-    AppleCN: domainProvider("AppleCN"),
-    OneDrive: domainProvider("OneDrive"),
-    Streaming: domainProvider("Streaming"),
-    StreamingIP: ipProvider("Streaming"),
-    SocialMedia: domainProvider("SocialMedia"),
-    SocialMediaIP: ipProvider("SocialMedia"),
-    Dev: domainProvider("Dev"),
-    Proxy: domainProvider("Proxy"),
-    ProxyIP: ipProvider("Proxy"),
-    China: domainProvider("China"),
-    ChinaIP: ipProvider("China"),
   };
 }
 
@@ -405,32 +369,18 @@ function buildRules() {
     "DST-PORT,1883,DIRECT",
     "DST-PORT,8883,DIRECT",
     "DOMAIN,services.googleapis.cn,DIRECT",
-    "RULE-SET,AppleCN,DIRECT",
     ...domainSuffixRules(AI_SUPPLEMENT_DOMAINS, GROUP.AI),
     "RULE-SET,AI,AI",
-    "RULE-SET,AIIP,AI,no-resolve",
     "RULE-SET,Crypto,Crypto",
-    "RULE-SET,OneDrive,OneDrive",
-    "RULE-SET,Microsoft,Microsoft",
-    "RULE-SET,GitHub,GitHub",
-    "RULE-SET,TM,Telegram",
     "RULE-SET,Telegram,Telegram",
     "RULE-SET,TelegramIP,Telegram,no-resolve",
     "RULE-SET,YouTube,YouTube",
     "RULE-SET,Netflix,Netflix",
     "RULE-SET,NetflixIP,Netflix,no-resolve",
-    "RULE-SET,Google,Google",
-    "RULE-SET,GoogleIP,Google,no-resolve",
-    "RULE-SET,Apple,Apple",
-    "RULE-SET,Dev,选择代理",
-    "RULE-SET,SocialMedia,选择代理",
-    "RULE-SET,SocialMediaIP,选择代理,no-resolve",
-    "RULE-SET,Streaming,选择代理",
-    "RULE-SET,StreamingIP,选择代理,no-resolve",
-    "RULE-SET,Proxy,选择代理",
-    "RULE-SET,ProxyIP,选择代理,no-resolve",
-    "RULE-SET,China,DIRECT",
-    "RULE-SET,ChinaIP,DIRECT,no-resolve",
+    "GEOSITE,google-play@cn,DIRECT",
+    "GEOSITE,microsoft@cn,DIRECT",
+    "GEOSITE,cn,DIRECT",
+    "GEOIP,cn,DIRECT,no-resolve",
     "MATCH,选择代理",
   ];
 }
