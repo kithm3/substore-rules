@@ -20,6 +20,7 @@ const GROUP = {
   LANDING: "落地节点",
   AI: "AI",
   CRYPTO: "Crypto",
+  GAMES: "Games",
   GOOGLE: "Google",
   MICROSOFT: "Microsoft",
   TELEGRAM: "Telegram",
@@ -224,6 +225,78 @@ const CRYPTO_DOMAINS = [
   "1inch.io",
   "dydx.exchange",
   "pump.fun",
+];
+
+const GAME_PLATFORM_DOMAINS = [
+  // Steam / Valve
+  "steampowered.com",
+  "steamcommunity.com",
+  "steamstatic.com",
+  "steamcontent.com",
+  "steamusercontent.com",
+  "steamgames.com",
+  "steamserver.net",
+  "steam-chat.com",
+  "steamstat.us",
+  "steamcdn-a.akamaihd.net",
+  "steamstore-a.akamaihd.net",
+  "valvesoftware.com",
+  // Epic / Unreal
+  "epicgames.com",
+  "epicgames.dev",
+  "epicgamescdn.com",
+  "unrealengine.com",
+  // Battle.net / Blizzard
+  "battle.net",
+  "blizzard.com",
+  "blizzardcdn.com",
+  "blz-contentstack.com",
+  "bnetproduct-a.akamaihd.net",
+  // EA / Ubisoft
+  "ea.com",
+  "origin.com",
+  "origin-a.akamaihd.net",
+  "ubisoft.com",
+  "ubisoftconnect.com",
+  "uplay.com",
+  "ubi.com",
+  // Sony PlayStation / Xbox / Nintendo
+  "playstation.com",
+  "playstation.net",
+  "playstationnetwork.com",
+  "sonyentertainmentnetwork.com",
+  "sonyinteractive.com",
+  "xbox.com",
+  "xboxlive.com",
+  "xboxservices.com",
+  "gamepass.com",
+  "minecraft.net",
+  "mojang.com",
+  "nintendo.com",
+  "nintendo.net",
+  "nintendo.co.jp",
+  "nintendo-europe.com",
+  "nintendowifi.net",
+  "nintendoswitch.com",
+  // Riot / Rockstar / other game stores and platforms
+  "riotgames.com",
+  "riotcdn.net",
+  "leagueoflegends.com",
+  "valorant.com",
+  "lolesports.com",
+  "rockstargames.com",
+  "rsg.sc",
+  "take2games.com",
+  "gog.com",
+  "gog-statics.com",
+  "humblebundle.com",
+  "itch.io",
+  "roblox.com",
+  "robloxcdn.com",
+  "twitch.tv",
+  "twitchcdn.net",
+  "unity.com",
+  "unity3d.com",
 ];
 
 const BLACKMATRIX7_RULE_PROVIDERS = {
@@ -477,15 +550,13 @@ function buildProxyGroups(proxies) {
   const countryGroupNames = countryGroups.map((group) => group.name);
   const lowCostNodes = allNodeNames.filter((name) => LOW_COST_RE.test(name));
   const landingNodes = allNodeNames.filter((name) => LANDING_RE.test(name));
+  const availableRegions = (...names) =>
+    names.filter((name) => countryGroupNames.includes(name));
 
   const hasLowCost = lowCostNodes.length > 0;
   const hasLanding = landingNodes.length > 0;
   const regionalChoices = uniq([
-    "香港节点",
-    "台湾节点",
-    "日本节点",
-    "新加坡节点",
-    "美国节点",
+    ...availableRegions("香港节点", "台湾节点", "日本节点", "新加坡节点", "美国节点"),
     ...countryGroupNames,
   ]);
 
@@ -501,10 +572,9 @@ function buildProxyGroups(proxies) {
 
   const aiChoices = uniq([
     hasLanding && GROUP.LANDING,
-    "美国节点",
+    ...availableRegions("美国节点"),
     GROUP.AUTO,
-    "日本节点",
-    "新加坡节点",
+    ...availableRegions("日本节点", "新加坡节点"),
     GROUP.SELECT,
     GROUP.MANUAL,
     "DIRECT",
@@ -513,10 +583,15 @@ function buildProxyGroups(proxies) {
   const cryptoChoices = uniq([
     GROUP.SELECT,
     GROUP.AUTO,
-    "美国节点",
-    "日本节点",
-    "香港节点",
-    "新加坡节点",
+    ...availableRegions("美国节点", "日本节点", "香港节点", "新加坡节点"),
+    GROUP.MANUAL,
+    "DIRECT",
+  ]);
+
+  const gamesChoices = uniq([
+    GROUP.SELECT,
+    GROUP.AUTO,
+    ...availableRegions("日本节点", "香港节点", "新加坡节点", "美国节点"),
     GROUP.MANUAL,
     "DIRECT",
   ]);
@@ -530,6 +605,7 @@ function buildProxyGroups(proxies) {
     hasLowCost ? createUrlTest(GROUP.LOW_COST, lowCostNodes) : null,
     createSelect(GROUP.AI, aiChoices),
     createSelect(GROUP.CRYPTO, cryptoChoices),
+    createSelect(GROUP.GAMES, gamesChoices),
     createSelect(GROUP.GOOGLE, [GROUP.SELECT, GROUP.AUTO, GROUP.MANUAL, "DIRECT"]),
     createSelect(GROUP.MICROSOFT, [GROUP.SELECT, GROUP.AUTO, GROUP.MANUAL, "DIRECT"]),
     createSelect(GROUP.TELEGRAM, [GROUP.SELECT, GROUP.AUTO, GROUP.MANUAL, "DIRECT"]),
@@ -621,6 +697,7 @@ function buildRules() {
     "DOMAIN-SUFFIX,cognitiveservices.azure.com,AI",
     "GEOSITE,category-ai-!cn,AI",
     ...domainSuffixRules(CRYPTO_DOMAINS, GROUP.CRYPTO),
+    ...domainSuffixRules(GAME_PLATFORM_DOMAINS, GROUP.GAMES),
     "GEOSITE,google-play@cn,DIRECT",
     "GEOSITE,microsoft@cn,DIRECT",
     "GEOSITE,onedrive,OneDrive",
