@@ -105,6 +105,41 @@ const AI_SUPPLEMENT_DOMAINS = [
   "cognitiveservices.azure.com",
 ];
 
+// 核心域名内联兜底；其它客户端域名继续由 YYDS Telegram.mrs 维护。
+const TELEGRAM_CORE_DOMAINS = [
+  "telegram.org",
+  "t.me",
+  "telegram.me",
+  "telegram.dog",
+  "tdesktop.com",
+  "telesco.pe",
+  "telegra.ph",
+  "graph.org",
+  "telegram-cdn.org",
+  "cdn-telegram.org",
+  "telegramdownload.com",
+  "tg.dev",
+];
+
+// https://core.telegram.org/resources/cidr.txt，核对日期 2026-10-09。
+// 原生客户端可直接连接 IP，不依赖域名嗅探或远程规则集才能匹配。
+const TELEGRAM_OFFICIAL_CIDRS = [
+  "91.108.56.0/22",
+  "91.108.4.0/22",
+  "91.108.8.0/22",
+  "91.108.16.0/22",
+  "91.108.12.0/22",
+  "149.154.160.0/20",
+  "91.105.192.0/23",
+  "91.108.20.0/22",
+  "185.76.151.0/24",
+  "2001:b28:f23d::/48",
+  "2001:b28:f23f::/48",
+  "2001:67c:4e8::/48",
+  "2001:b28:f23c::/48",
+  "2a0a:f280::/32",
+];
+
 const DOMESTIC_IOT_DOMAINS = [
   "simshine.cn",
   "simshine.com.cn",
@@ -364,6 +399,10 @@ function buildRules() {
     "IP-CIDR,172.16.0.0/12,DIRECT,no-resolve",
     "IP-CIDR,192.168.0.0/16,DIRECT,no-resolve",
     "IP-CIDR,224.0.0.0/4,DIRECT,no-resolve",
+    ...domainSuffixRules(TELEGRAM_CORE_DOMAINS, GROUP.TELEGRAM),
+    ...TELEGRAM_OFFICIAL_CIDRS.map((cidr) =>
+      `${cidr.includes(":") ? "IP-CIDR6" : "IP-CIDR"},${cidr},${GROUP.TELEGRAM},no-resolve`
+    ),
     ...domainSuffixRules(DOMESTIC_IOT_DOMAINS, "DIRECT"),
     "DST-PORT,123,DIRECT",
     "DST-PORT,1883,DIRECT",
