@@ -15,6 +15,7 @@ const GROUP = {
   MANUAL: "手动选择",
   AUTO: "自动选择",
   FALLBACK: "故障转移",
+  SSH: "SSH 连接",
   DIRECT: "直连",
   LOW_COST: "低倍率节点",
   LANDING: "落地节点",
@@ -598,6 +599,7 @@ function buildProxyGroups(proxies) {
 
   const groups = [
     createSelect(GROUP.SELECT, commonChoices),
+    createSelect(GROUP.SSH, ["DIRECT", GROUP.SELECT, GROUP.AUTO, GROUP.FALLBACK, ...regionalChoices, GROUP.MANUAL]),
     createSelect(GROUP.MANUAL, allNodeNames),
     createUrlTest(GROUP.AUTO, allNodeNames),
     createFallback(GROUP.FALLBACK, commonChoices.filter((name) => name !== GROUP.FALLBACK)),
@@ -667,9 +669,6 @@ function buildRules() {
 
   return [
     "RULE-SET,BM7_Lan,DIRECT",
-    "RULE-SET,BM7_XiaoMi,DIRECT",
-    "RULE-SET,BM7_LvMiLianChuang,DIRECT",
-    "RULE-SET,BM7_LG,DIRECT",
     "GEOSITE,private,DIRECT",
     "GEOIP,private,DIRECT,no-resolve",
     "DOMAIN-SUFFIX,local,DIRECT",
@@ -679,6 +678,10 @@ function buildRules() {
     "IP-CIDR,172.16.0.0/12,DIRECT,no-resolve",
     "IP-CIDR,192.168.0.0/16,DIRECT,no-resolve",
     "IP-CIDR,224.0.0.0/4,DIRECT,no-resolve",
+    `AND,((NETWORK,TCP),(DST-PORT,22)),${GROUP.SSH}`,
+    "RULE-SET,BM7_XiaoMi,DIRECT",
+    "RULE-SET,BM7_LvMiLianChuang,DIRECT",
+    "RULE-SET,BM7_LG,DIRECT",
     ...domainSuffixRules(DOMESTIC_IOT_DOMAINS, "DIRECT"),
     "DST-PORT,123,DIRECT",
     "DST-PORT,1883,DIRECT",
