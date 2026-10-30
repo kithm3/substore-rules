@@ -22,6 +22,9 @@ test('SSH group defaults to DIRECT and offers valid selectable routing options',
     for (const expected of ['选择代理', '自动选择', '故障转移', '手动选择', '日本节点']) {
       assert.ok(ssh.proxies.includes(expected), `missing SSH choice: ${expected}`);
     }
+    for (const name of names) {
+      assert.ok(ssh.proxies.includes(name), `cannot select SSH node directly: ${name}`);
+    }
     const valid = new Set([...names, ...groups.map((group) => group.name), 'DIRECT']);
     for (const choice of ssh.proxies) assert.ok(valid.has(choice), `invalid SSH choice: ${choice}`);
   }

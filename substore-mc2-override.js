@@ -599,7 +599,7 @@ function buildProxyGroups(proxies) {
 
   const groups = [
     createSelect(GROUP.SELECT, commonChoices),
-    createSelect(GROUP.SSH, ["DIRECT", GROUP.SELECT, GROUP.AUTO, GROUP.FALLBACK, ...regionalChoices, GROUP.MANUAL]),
+    createSelect(GROUP.SSH, ["DIRECT", GROUP.SELECT, GROUP.AUTO, GROUP.FALLBACK, ...regionalChoices, GROUP.MANUAL, ...allNodeNames]),
     createSelect(GROUP.MANUAL, allNodeNames),
     createUrlTest(GROUP.AUTO, allNodeNames),
     createFallback(GROUP.FALLBACK, commonChoices.filter((name) => name !== GROUP.FALLBACK)),
